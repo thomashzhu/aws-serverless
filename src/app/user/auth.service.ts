@@ -63,9 +63,18 @@ export class AuthService {
 
   confirmUser(username: string, code: string) {
     this.authIsLoading.next(true);
-    const userData = {
-      Username: username,
-    };
+
+    Auth.confirmSignUp(username, code)
+      .then(data => {
+        this.authDidFail.next(false);
+        this.authIsLoading.next(false);
+        this.router.navigate(['/']);
+      })
+      .catch(error => {
+        console.log(error);
+        this.authDidFail.next(true);
+        this.authIsLoading.next(false);
+      });
   }
 
   signIn(username: string, password: string): void {
@@ -74,6 +83,21 @@ export class AuthService {
       Username: username,
       Password: password
     };
+
+    Auth.signIn(username, password)
+      .then(user => {
+        this.authStatusChanged.next(true);
+        this.authDidFail.next(false);
+        this.authIsLoading.next(false);
+
+        console.log(user);
+      })
+      .catch(error => {
+        console.log(error);
+        this.authDidFail.next(true);
+        this.authIsLoading.next(false);
+      });
+
     this.authStatusChanged.next(true);
     return;
   }
