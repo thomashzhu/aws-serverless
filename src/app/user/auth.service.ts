@@ -102,22 +102,31 @@ export class AuthService {
     return;
   }
 
-  getAuthenticatedUser() {
-  }
-
   logout() {
+    Auth.signOut()
+      .then(data => console.log(data))
+      .catch(error => console.log(error));
+
     this.authStatusChanged.next(false);
   }
 
   isAuthenticated(): Observable<boolean> {
-    const user = this.getAuthenticatedUser();
     const obs = Observable.create((observer) => {
-      if (!user) {
-        observer.next(false);
-      } else {
-        observer.next(false);
-      }
-      observer.complete();
+      Auth.currentAuthenticatedUser()
+        .then((user) => 
+          Auth.currentSession()
+            .then((session) => {
+              if (session === null) {
+                observer.next(false);
+              } else if (session.isValid()) {
+                observer.next(true);
+              } else {
+                observer.next(false);
+              }
+            }))
+        .catch(error => {
+          observer.next(false);
+        });
     });
     return obs;
   }
