@@ -7,14 +7,9 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 import { User } from './user.model';
 
-import { CognitoUserPool, CognitoUserAttribute, CognitoUser } from 'amazon-cognito-identity-js';
+import Amplify, { Auth } from 'aws-amplify';
+import { CognitoUser } from 'amazon-cognito-identity-js';
 import aws from 'private/aws';
-
-const POOL_DATA = {
-  UserPoolId: 'us-east-1_iRxiI3bv8',
-  ClientId: aws.clientId,
-};
-const userPool = new CognitoUserPool(POOL_DATA);
 
 @Injectable()
 export class AuthService {
@@ -23,7 +18,15 @@ export class AuthService {
   authStatusChanged = new Subject<boolean>();
   registeredUser: CognitoUser;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router) {
+    Amplify.configure({
+      Auth: {
+          region: 'us-east-1',
+          userPoolId: 'us-east-1_iRxiI3bv8',
+          userPoolWebClientId: aws.clientId,
+      }
+  });
+  }
 
   signUp(username: string, email: string, password: string): void {
     this.authIsLoading.next(true);
@@ -37,17 +40,21 @@ export class AuthService {
       Value: user.email
     };
 
-    const attributeList: CognitoUserAttribute[] = [];
-    attributeList.push(new CognitoUserAttribute(emailAttribute));
-
-    userPool.signUp(user.username, user.password, attributeList, null, (error, result) => {
-      if (error) {
-        console.log(error);
-        this.authDidFail.next(true);
-      } else {
-        this.authDidFail.next(false);
-        this.registeredUser = result.user;
-      }
+    Auth.signUp({
+      username,
+      password,
+      attributes: {
+          email,
+      },
+    })
+    .then(data => {
+      this.authDidFail.next(false);
+      this.registeredUser = data.user;
+      this.authIsLoading.next(false);
+    })
+    .catch(error => {
+      console.log(error);
+      this.authDidFail.next(true);
       this.authIsLoading.next(false);
     });
 
