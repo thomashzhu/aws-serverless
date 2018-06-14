@@ -29,7 +29,7 @@ async@^1.4.0:
   version "1.5.2"
   resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
-aws-serverless-express@^3.0.2:
+aws-serverless-express@^3.2.0:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/aws-serverless-express/-/aws-serverless-express-3.2.0.tgz#f7ed4582ac59af3dda7f0e87e89e9e94c3ee67f1"
   dependencies:
